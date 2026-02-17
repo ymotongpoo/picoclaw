@@ -1,0 +1,38 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: picoclaw-agent
+  namespace: picoclaw
+  labels:
+    app: picoclaw
+    component: agent
+spec:
+  template:
+    metadata:
+      labels:
+        app: picoclaw
+        component: agent
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: picoclaw-agent
+        image: picoclaw:latest
+        imagePullPolicy: IfNotPresent
+        command: ["picoclaw", "agent"]
+        args: ["-m", "Hello"]
+        stdin: true
+        tty: true
+        volumeMounts:
+        - name: config
+          mountPath: /root/.picoclaw/config.json
+          subPath: config.json
+          readOnly: true
+        - name: workspace
+          mountPath: /root/.picoclaw/workspace
+      volumes:
+      - name: config
+        configMap:
+          name: picoclaw-config
+      - name: workspace
+        persistentVolumeClaim:
+          claimName: picoclaw-workspace

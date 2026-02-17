@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: picoclaw-gateway
+  namespace: picoclaw
+  labels:
+    app: picoclaw
+    component: gateway
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: picoclaw
+      component: gateway
+  template:
+    metadata:
+      labels:
+        app: picoclaw
+        component: gateway
+    spec:
+      containers:
+      - name: picoclaw-gateway
+        image: picoclaw:latest
+        imagePullPolicy: IfNotPresent
+        command: ["picoclaw"]
+        args: ["gateway"]
+        volumeMounts:
+        - name: config
+          mountPath: /root/.picoclaw/config.json
+          subPath: config.json
+          readOnly: true
+        - name: workspace
+          mountPath: /root/.picoclaw/workspace
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+      volumes:
+      - name: config
+        configMap:
+          name: picoclaw-config
+      - name: workspace
+        persistentVolumeClaim:
+          claimName: picoclaw-workspace
